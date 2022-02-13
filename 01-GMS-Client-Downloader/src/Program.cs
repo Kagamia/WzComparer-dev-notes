@@ -83,10 +83,10 @@ foreach (var kv in manifest.files)
 }
 
 class GMSManifest {
-	public double buildtime;
-	public string filepath_encoding;
-	public Dictionary<string, GMSFileInfo> files;
-	public string platform;
+    public double buildtime;
+    public string filepath_encoding;
+    public Dictionary<string, GMSFileInfo> files;
+    public string platform;
     public string product;
     public long total_compressed_size;
     public int total_objects;
@@ -95,8 +95,8 @@ class GMSManifest {
 }
 
 class GMSFileInfo {
-	public long fsize;
-	public double mtime;
-	public string[] objects;
-	public int[] objects_fsize;
+    public long fsize;
+    public double mtime;
+    public string[] objects;
+    public int[] objects_fsize;
 }
