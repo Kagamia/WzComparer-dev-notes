@@ -130,13 +130,13 @@ The `objects` array of each file represents the SHA1 hash of each file block, th
 > object_id: `ab4d653972447afe9c2fcbf2e0008c017e950fd7`  
 > url: `http://download2.nexon.net/Game/nxl/games/10100/10100/ab/ab4d653972447afe9c2fcbf2e0008c017e950fd7`
 
-Please node the relative path we added, `10010/` is fixed and the `ab/` is the first two chars of the `object_id`.
+Please note the relative path we added, `10010/` is fixed and the `ab/` is the first two chars of the `object_id`.
 
 The file blocks are still being compressed, using the same code I wrote above, you can download the file blocks one by one, and validate with SHA1 hash and `objects_fsize`. Finally, joining all file blocks into one file, and save to the decoded file path. Repeating the process, a complete client could be downloaded. 
 
 ## Summary
 
-We finally have an overview of how GMS client downloader works, a sample code will also be attached with this article, but
+We finally have an overview of how GMS client downloader works, a sample code will also be attached with this article, but it is not optimized for production ready, please be careful to use the sample code.
 
 In the next article we'll be looking at the GMS patcher.
 
