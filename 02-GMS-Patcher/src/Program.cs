@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using Newtonsoft.Json;
 
@@ -55,12 +57,46 @@ for (int i=0, cnt=manifest.diff_result.Length; i<cnt; i++) {
 
     if (!File.Exists(fullFileName) || new FileInfo(fullFileName).Length != diff.file_size)
     {
-        var objUrl = new Uri(new Uri(diffManifestUrl), $"10100/{fileName}");
-        Console.WriteLine("part {0}/{1}: {2}", i + 1, cnt, objUrl);
-        using (var fs = File.Create(fullFileName))
-        using (var ns = await client.GetStreamAsync(objUrl))
+        if (diff.parts != null && diff.parts.Length > 0)
         {
-            ns.CopyTo(fs);
+            // Multi-part diff: download each part, verify MD5, then concat
+            Console.WriteLine("part {0}/{1}: {2} ({3} parts)", i + 1, cnt, diff.path, diff.parts.Length);
+            using (var fs = File.Create(fullFileName))
+            {
+                foreach (var part in diff.parts)
+                {
+                    var partUrl = new Uri(new Uri(diffManifestUrl), $"10100/{part.path}");
+                    Console.WriteLine("  downloading: {0}", partUrl);
+                    byte[] partData;
+                    using (var ns = await client.GetStreamAsync(partUrl))
+                    using (var ms = new MemoryStream())
+                    {
+                        ns.CopyTo(ms);
+                        partData = ms.ToArray();
+                    }
+                    // Verify MD5 checksum of the compressed part
+                    if (!string.IsNullOrEmpty(part.checksum))
+                    {
+                        var md5 = MD5.HashData(partData);
+                        var md5Str = Convert.ToHexString(md5).ToLower();
+                        if (md5Str != part.checksum.ToLower())
+                        {
+                            throw new Exception($"MD5 mismatch for part {part.path}: expected {part.checksum}, got {md5Str}");
+                        }
+                    }
+                    fs.Write(partData, 0, partData.Length);
+                }
+            }
+        }
+        else
+        {
+            var objUrl = new Uri(new Uri(diffManifestUrl), $"10100/{fileName}");
+            Console.WriteLine("part {0}/{1}: {2}", i + 1, cnt, objUrl);
+            using (var fs = File.Create(fullFileName))
+            using (var ns = await client.GetStreamAsync(objUrl))
+            {
+                ns.CopyTo(fs);
+            }
         }
 
         // 4-apply diff file
@@ -162,10 +198,18 @@ class GMSDiffManifest
     public string version;
 }
 
+class GMSPart
+{
+    public string checksum;
+    public long file_size;
+    public string path;
+}
+
 class GMSDiffResult
 {
     public string checksum;
     public long file_size;
     public string path;
     public int type;
+    public GMSPart[] parts;
 }

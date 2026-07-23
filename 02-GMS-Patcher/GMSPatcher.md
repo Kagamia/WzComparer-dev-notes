@@ -75,6 +75,35 @@ The fields are still self-explanatory, to download each `diff_result` file, we c
 
 The `.diff` file is still being compressed in zlib format, but **don't hurry to decompress it**, the `file_size` is the **compressed size**, and the `checksum` is the **MD5** hash of the compressed file, that's pretty different than other files we have meet.
 
+Patches for recent 64-bit client have added one more key named `parts`, like this:
+```
+        {
+            "checksum": "", 
+            "file_size": 289335404, 
+            "parts": [
+                {
+                    "checksum": "f5fa65bfbeaea7c04bae7d3c77197221", 
+                    "file_size": 104857600, 
+                    "path": "Data/Sound/Sound_033.wz.diff"
+                }, 
+                {
+                    "checksum": "02624d76a8f8e6a6e68ce98d584d3b35", 
+                    "file_size": 104857600, 
+                    "path": "Data/Sound/Sound_033.wz.diff.001"
+                }, 
+                {
+                    "checksum": "83e149f9c3ed3d24760f5b764eb640b9", 
+                    "file_size": 79620204, 
+                    "path": "Data/Sound/Sound_033.wz.diff.002"
+                }
+            ], 
+            "path": "Data/Sound/Sound_033.wz", 
+            "type": 1
+        },
+```
+
+For files with `parts` entry, you'll need to download all part files listed here, verify **MD5** checksum, then concat them into one single compressed `.diff` file.
+
 ## Diff file format
 
 OK, we have already download the `.diff` file, maybe you have already tried to decompress it, but you still get another file in binary format that can't open with any text editor. In this section we'll deep into the `.diff` file struct.
@@ -143,4 +172,6 @@ Thanks to `Goldentube` for their kind help.
 
 ## Change log
 
+- 2026-07-23, v1.1
+  - Add details about parts key.
 - 2022-02-13, v1.0
